@@ -26,6 +26,8 @@ def drawsourcedata(x, y, fname):
     plt.ylabel("Hits/hour")
     plt.xticks([w*7*24 for w in range(10)], ['week %i' %w for w in range(10)])
     plt.autoscale(tight=True)
+    plt.ylim(ymin=0)
+    plt.ylim(ymax=10000)
     plt.grid()
     #plt.show()
     plt.savefig(fname)
@@ -35,6 +37,7 @@ def drawsourcedata(x, y, fname):
 """Draw source data image to get first impression: sourcedata.jpg"""
 drawsourcedata(x, y, os.path.join(CHART_DIR, "source data.jpg"))
 fx = sp.linspace(0, x[-1], 1000)
+fx1 = sp.linspace(0, x[-1]+100, 1000)
 
 
 """First Model: Simple straight line"""
@@ -77,11 +80,50 @@ plt.legend(["d=%i" %f1.order, "d=%i" %f2.order, "d=%i" %f3.order, "d=%i" %f10.or
 drawsourcedata(x, y, os.path.join(CHART_DIR, "10-degree polynomial.jpg"))
 
 
-"""Fifth Model: 100-degree polynomial"""
-f100p = sp.polyfit(x, y, 100)
+"""Fifth Model: 50-degree polynomial"""
+f50p = sp.polyfit(x, y, 50)
 #print(f100p)
-f100 = sp.poly1d(f100p)
-print("Error of 100-degree polunomial model: %f" %error(f100, x, y))
-plt.plot(fx, f100(fx), linewidth=4, linestyle='-', color='r')
-plt.legend(["d=%i" %f1.order, "d=%i" %f2.order, "d=%i" %f3.order, "d=%i" %f10.order, "d=%i" %f100.order], loc="upper left")
-drawsourcedata(x, y, os.path.join(CHART_DIR, "100-degree polynomial.jpg"))
+f50 = sp.poly1d(f50p)
+print("Error of 50-degree polunomial model: %f" %error(f50, x, y))
+plt.plot(fx, f50(fx), linewidth=4, linestyle='-', color='r')
+plt.legend(["d=%i" %f1.order, "d=%i" %f2.order, "d=%i" %f3.order, "d=%i" %f10.order, "d=%i" %f50.order], loc="upper left")
+drawsourcedata(x, y, os.path.join(CHART_DIR, "50-degree polynomial.jpg"))
+
+
+"""Prediction"""
+plt.figure(num=None, figsize=(8, 6))
+plt.clf()
+#print(f100p)
+plt.plot(fx1, f1(fx1), linewidth=4, linestyle='-', color='g')
+plt.plot(fx1, f2(fx1), linewidth=4, linestyle='-.', color='r')
+plt.plot(fx1, f3(fx1), linewidth=4, linestyle='--', color='m')
+plt.plot(fx1, f10(fx1), linewidth=4, linestyle=':', color='y')
+plt.plot(fx1, f50(fx1), linewidth=4, linestyle='-', color='r')
+#plt.yticks([0, 1000, 2000, 3000, 4000, 5000, 6000])
+#plt.yscale('linear')
+plt.autoscale(tight=True)
+plt.ylim(ymin=0)
+plt.ylim(ymax=10000)
+plt.legend(["d=%i" %f1.order, "d=%i" %f2.order, "d=%i" %f3.order, "d=%i" %f10.order, "d=%i" %f50.order], loc="upper left")
+drawsourcedata(x, y, os.path.join(CHART_DIR, "Prediction.jpg"))
+
+
+
+"""Two line Model"""
+inflection = 3.5*7*24
+xa = x[:inflection]
+xb = x[inflection:]
+ya = y[:inflection]
+yb = y[inflection:]
+fa = sp.poly1d(sp.polyfit(xa, ya, 1))
+fb = sp.poly1d(sp.polyfit(xb, yb, 1))
+fa_error = error(fa, xa, ya)
+fb_error = error(fb, xb, yb)
+print("Error of Two line Model: %f" %(fa_error + fb_error))
+plt.figure(num=None, figsize=(8, 6))
+plt.clf()
+plt.plot(fx, fa(fx), linewidth=4, linestyle='-', color='r')
+plt.plot(x[inflection:], fb(x[inflection:]), linewidth=4, linestyle='-', color='r')
+plt.legend(["d=%i" %fa.order, "d=%i" %fb.order], loc="upper left")
+drawsourcedata(x, y, os.path.join(CHART_DIR, "Two line Model.jpg"))
+
